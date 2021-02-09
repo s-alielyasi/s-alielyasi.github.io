@@ -194,6 +194,11 @@ a {
     font-weight: 500;
     font-style: normal;
 }
+* {
+  user-select: none;
+  scroll-behavior: smooth;
+  font-family: Vazir;
+}
 #st-push-box {
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.4);
   width: 100%;
