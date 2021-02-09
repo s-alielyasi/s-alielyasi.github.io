@@ -184,11 +184,9 @@ a {
     transform: rotate(-45deg) translateY(15%);
   }
 }
-@font-face {
-    font-family: Vazir;
-    src: url('fonts/Vazir-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-style: normal;
+@font-face{
+  font-family: Vazir;
+  src: url('./fonts/Vazir-Regular.ttf');
 }
 * {
   user-select: none;
