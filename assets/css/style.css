@@ -172,7 +172,8 @@ a:focus-visible {
 }
 
 .st-home a,
-.st-resume a {
+.st-resume a,
+.st-contact a {
   scroll-margin-block-end: calc(var(--nav-height) + var(--safe-bottom));
 }
 
@@ -318,26 +319,180 @@ a:focus-visible {
   border-width: 2px;
 }
 
+.st-contact {
+  justify-content: flex-start;
+  gap: 1.5rem;
+}
+
+.contact-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  inline-size: 100%;
+  max-inline-size: 68rem;
+}
+
+.contact-intro h2,
+.contact-intro p {
+  max-inline-size: 100%;
+}
+
+.contact-intro .contact-lead {
+  font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+  font-weight: 700;
+}
+
+.contact-primary,
+.contact-more {
+  inline-size: 100%;
+  max-inline-size: 68rem;
+  text-align: start;
+}
+
+.contact-primary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.contact-card,
+.contact-social {
+  min-inline-size: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  background: var(--card-surface);
+  overflow-wrap: anywhere;
+}
+
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contact-card-featured {
+  color: #fff;
+  background: var(--accent-surface);
+  border-color: var(--accent-surface);
+}
+
+.contact-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.contact-card h3,
+.contact-more h3,
+.contact-social h4 {
+  margin: 0;
+  color: var(--accent-dark);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.contact-card-featured h3 {
+  color: #fff;
+}
+
+.contact-icon {
+  inline-size: 56px;
+  block-size: 56px;
+  padding: 8px;
+  color: var(--accent-dark);
+}
+
+.contact-card-featured .contact-icon {
+  color: #fff;
+}
+
+.contact-card p,
+.contact-social p {
+  max-inline-size: none;
+  font-size: 1rem;
+}
+
+.contact-card .contact-handle {
+  margin-block-end: 0.25rem;
+}
+
+.contact-card .action-link {
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  inline-size: 100%;
+  margin-block-start: auto;
+  padding-inline: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.contact-action-label {
+  min-inline-size: min(100%, 10rem);
+  max-inline-size: 100%;
+}
+
+.contact-card-featured a:focus-visible {
+  outline-color: #fff;
+}
+
+.contact-more > h3 {
+  margin-block-end: 1rem;
+}
+
 .contact-links {
   display: grid;
-  gap: 0.25rem;
-  inline-size: 100%;
-  max-inline-size: 26rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.contact-links a {
-  display: block;
-  min-block-size: 2.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  overflow-wrap: anywhere;
+.contact-links li {
+  display: flex;
+  min-inline-size: 0;
+}
+
+.contact-social {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 1.25rem;
+  grid-template-areas: "icon title ." "icon description ." ". handle arrow";
+  gap: 0 0.75rem;
+  align-items: start;
+  inline-size: 100%;
+  min-block-size: 9rem;
+}
+
+.contact-social .contact-icon {
+  grid-area: icon;
+}
+
+.contact-social h4 {
+  grid-area: title;
+}
+
+.contact-description {
+  grid-area: description;
+}
+
+.contact-social .contact-handle {
+  grid-area: handle;
+  font-size: 0.875rem;
+}
+
+.contact-arrow {
+  grid-area: arrow;
+  align-self: end;
+  color: var(--accent-dark);
 }
 
 .contact-links a:hover {
-  color: var(--accent-dark);
   background: #edf8f8;
 }
 
@@ -710,6 +865,20 @@ a:focus-visible {
   .experience-badge {
     justify-self: start;
   }
+
+  .contact-links {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-social {
+    grid-template-columns: 56px minmax(0, 1fr);
+    grid-template-areas: "icon title" "description description" "handle handle" ". arrow";
+    gap: 0.25rem 0.75rem;
+  }
+
+  .contact-arrow {
+    justify-self: end;
+  }
 }
 
 @media (max-width: 56rem) {
@@ -719,6 +888,10 @@ a:focus-visible {
   }
 
   .resume-details {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-primary {
     grid-template-columns: 1fr;
   }
 }
@@ -734,14 +907,6 @@ a:focus-visible {
     padding-block-end: calc(var(--nav-height) + var(--safe-bottom) + 1rem);
   }
 
-  .contact-links {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-inline-size: 40rem;
-  }
-
-  .contact-links li:last-child {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

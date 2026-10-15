@@ -69,6 +69,32 @@ test("resume offers a real PDF download, a viewing link and contact navigation",
   await expect(page.locator("#st-push-3")).toHaveAttribute("aria-current", "location");
 });
 
+test("contact channels open their exact destinations in a new tab with keyboard activation", async ({ page, context }) => {
+  await page.locator("#st-push-3").click();
+  const contact = page.locator("#st-panel-3");
+  await expect(page.locator("#st-push-3")).toHaveAttribute("aria-current", "location");
+  const channels = [
+    ["ارسال پیام در تلگرام", "https://t.me/s_alielyasi"],
+    ["مشاهده لینکداین", "https://www.linkedin.com/in/seyedalielyasi/"],
+    ["گیت‌هاب", "https://github.com/s-alielyasi"],
+    ["ویرگول", "https://virgool.io/@alielyasi/"],
+    ["گودریدز", "https://www.goodreads.com/s_alielyasi"]
+  ];
+  for (const [name, destination] of channels) {
+    // Intercept the popup's first request so no social service is contacted.
+    await context.route(destination, route => route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Link destination check</title>" }));
+    const link = contact.getByRole("link", { name: new RegExp(name) });
+    await expect(link).toHaveAttribute("href", destination);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(link).toHaveAccessibleName(/در تب جدید باز می‌شود/);
+    const [popup] = await Promise.all([page.waitForEvent("popup"), link.press("Enter")]);
+    await popup.waitForLoadState("domcontentloaded");
+    expect(popup.url()).toBe(destination);
+    await popup.close();
+  }
+});
+
 test("all sections remain reachable across portrait and landscape layouts", async ({ page }, testInfo) => {
   const initial = page.viewportSize();
   const sizes = testInfo.project.name.includes("mobile") || testInfo.project.name.includes("tablet")
@@ -87,7 +113,7 @@ test("all sections remain reachable across portrait and landscape layouts", asyn
       await expect.poll(() => page.locator(`#st-panel-${i}`).evaluate(el => Math.abs(el.getBoundingClientRect().top))).toBeLessThan(2);
       const state = await page.evaluate(() => {
         const width = document.documentElement.clientWidth;
-        const overflow = [...document.querySelectorAll("h1,h2,h3,h4,p,.intro-card,.resume-card,.experience-badge,.skill-tags li,.action-link,.text-link,.contact-links a,.st-push")]
+        const overflow = [...document.querySelectorAll("h1,h2,h3,h4,p,.intro-card,.resume-card,.contact-card,.experience-badge,.skill-tags li,.action-link,.text-link,.contact-links a,.st-push")]
           .filter(el => { const r = el.getBoundingClientRect(); return r.left < -1 || r.right > width + 1; })
           .map(el => el.textContent.trim());
         const clipped = [...document.querySelectorAll(".st-panel")].filter(el => el.scrollHeight > el.clientHeight + 2).map(el => el.id);
@@ -135,7 +161,7 @@ test("skip link and keyboard section navigation work", async ({ page }) => {
 test("large text reflows and redesigned section links and the final action remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-  for (const link of await page.locator("#st-panel-1 a, #st-panel-2 a").all()) {
+  for (const link of await page.locator("#st-panel-1 a, #st-panel-2 a, #st-panel-3 a").all()) {
     await link.focus();
     const bounds = await link.evaluate(el => {
       const rect = el.getBoundingClientRect();
