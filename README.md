@@ -1,11 +1,6 @@
-# Ali Elyasi's Personal Website
+# Ali Elyasi | Product Manager, Software & Quality
 
-[ali-elyasi.ir](https://ali-elyasi.ir) is my personal website where you can find out about me, my career and my education background.
-
-And In it you can find out ways to get in touch with me.
-
-You can also contact me about designing various websites, testing and implementing the software quality assurance process.
-
+[ali-elyasi.ir](https://ali-elyasi.ir) is Ali Elyasi's personal website, focused on product management, software, and quality. The Persian interface includes an English resume, contact links, and links to service requests and payment.
 
 ## Local development
 
@@ -39,14 +34,26 @@ robots.txt                            # Crawler access and sitemap location
 sitemap.xml                           # Canonical public page URL
 AGENTS.md                             # Contributor and agent guidance
 docs/memory.md                        # Architecture and known issues
+docs/status.md                        # Completed work and remaining checks
 ```
 
-Only the English resume is published. See [AGENTS.md](AGENTS.md) and [docs/memory.md](docs/memory.md) for development guidance and known issues.
+Only the English resume is included in the current site. See [AGENTS.md](AGENTS.md) for contributor guidance, [docs/memory.md](docs/memory.md) for the current architecture, and [docs/status.md](docs/status.md) for completed work and remaining checks.
+
+## SEO and hosting
+
+`index.html` contains the English browser title, Persian main heading, the owner's exact description, Open Graph metadata, and JSON-LD. The description is repeated in the description meta tag, Open Graph, and JSON-LD; keep all three copies consistent. The site has one public HTML page; section hashes are navigation targets and are not separate sitemap entries.
+
+The canonical URL is `https://ali-elyasi.ir/`, matching `CNAME`. If the domain changes, update `CNAME`, the canonical and Open Graph URLs, JSON-LD, `robots.txt`, and `sitemap.xml` together.
+
+The repository contains no deployment workflow or build configuration. Confirm the publishing source in GitHub Pages settings before deploying; a local commit does not confirm that the live site has been updated.
+
+## Verification
+
+The implementation was previously checked in Firefox 136 at 11 viewport sizes from 320 to 1440 pixels wide, including landscape layouts, 200% root text size, Enter navigation, and JavaScript-disabled navigation. These checks used temporary scripts outside the repository; there is no committed test suite or CI. Real-device, other-browser, and live-hosting verification remain listed in [docs/status.md](docs/status.md).
 
 ## Contributing
 
 Contributions are always welcome!
-
 
 ## 🔗 Links
 
