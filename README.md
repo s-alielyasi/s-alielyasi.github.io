@@ -35,6 +35,8 @@ assets/fonts/vazir/                   # Official Vazir webfonts and license
 assets/images/favicon.png            # Site icon
 resumes/AliElyasi_Resume_English.pdf   # Public English resume
 CNAME                                 # Custom domain
+robots.txt                            # Crawler access and sitemap location
+sitemap.xml                           # Canonical public page URL
 AGENTS.md                             # Contributor and agent guidance
 docs/memory.md                        # Architecture and known issues
 ```
