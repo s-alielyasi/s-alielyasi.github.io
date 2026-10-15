@@ -32,7 +32,7 @@ function scheduleUpdate() {
 }
 
 // Some browsers leave a partly visible focused link behind the fixed menu.
-document.querySelector(".st-home").addEventListener("focusin", event => {
+function keepFocusedLinkVisible(event) {
   const link = event.target.closest("a");
   if (!link || !link.matches(":focus-visible")) return;
 
@@ -42,7 +42,11 @@ document.querySelector(".st-home").addEventListener("focusin", event => {
     const visibleTop = Math.max(8, (menuTop - bounds.height) / 2);
     window.scrollBy({ top: bounds.top - visibleTop, behavior: "instant" });
   }
-});
+}
+
+for (const panel of document.querySelectorAll(".st-home, .st-resume")) {
+  panel.addEventListener("focusin", keepFocusedLinkVisible);
+}
 
 window.addEventListener("scroll", scheduleUpdate, { passive: true });
 window.addEventListener("resize", scheduleUpdate);

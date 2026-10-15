@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { readFile } from "node:fs/promises";
 
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -45,6 +46,29 @@ test("home actions open the intended sections and preserve browser history", asy
   await expect(writing).toHaveAttribute("rel", "noopener noreferrer");
 });
 
+test("resume offers a real PDF download, a viewing link and contact navigation", async ({ page, request }) => {
+  await page.locator("#st-push-2").click();
+  const resume = page.locator("#st-panel-2");
+  await expect(page.locator("#st-push-2")).toHaveAttribute("aria-current", "location");
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    resume.getByRole("link", { name: "دریافت رزومه انگلیسی", exact: true }).click()
+  ]);
+  expect(download.suggestedFilename()).toBe("AliElyasi_Resume_English.pdf");
+  const downloaded = await readFile(await download.path());
+  const pdf = await request.get("/resumes/AliElyasi_Resume_English.pdf");
+  expect(pdf.ok()).toBeTruthy();
+  expect(pdf.headers()["content-type"]).toContain("application/pdf");
+  expect(downloaded.equals(await pdf.body())).toBeTruthy();
+  expect(downloaded.subarray(0, 5).toString()).toBe("%PDF-");
+  const viewing = resume.getByRole("link", { name: "مشاهده رزومه", exact: true });
+  await expect(viewing).toHaveAttribute("href", "resumes/AliElyasi_Resume_English.pdf");
+  await expect(viewing).not.toHaveAttribute("download");
+  await resume.getByRole("link", { name: "تماس برای همکاری", exact: true }).click();
+  await expect(page).toHaveURL(/#st-panel-3$/);
+  await expect(page.locator("#st-push-3")).toHaveAttribute("aria-current", "location");
+});
+
 test("all sections remain reachable across portrait and landscape layouts", async ({ page }, testInfo) => {
   const initial = page.viewportSize();
   const sizes = testInfo.project.name.includes("mobile") || testInfo.project.name.includes("tablet")
@@ -63,7 +87,7 @@ test("all sections remain reachable across portrait and landscape layouts", asyn
       await expect.poll(() => page.locator(`#st-panel-${i}`).evaluate(el => Math.abs(el.getBoundingClientRect().top))).toBeLessThan(2);
       const state = await page.evaluate(() => {
         const width = document.documentElement.clientWidth;
-        const overflow = [...document.querySelectorAll("h1,h2,p,.intro-card,.action-link,.text-link,.contact-links a,.st-push")]
+        const overflow = [...document.querySelectorAll("h1,h2,h3,h4,p,.intro-card,.resume-card,.experience-badge,.skill-tags li,.action-link,.text-link,.contact-links a,.st-push")]
           .filter(el => { const r = el.getBoundingClientRect(); return r.left < -1 || r.right > width + 1; })
           .map(el => el.textContent.trim());
         const clipped = [...document.querySelectorAll(".st-panel")].filter(el => el.scrollHeight > el.clientHeight + 2).map(el => el.id);
@@ -108,10 +132,10 @@ test("skip link and keyboard section navigation work", async ({ page }) => {
   await expect(page.locator("#st-panel-4")).toBeFocused();
 });
 
-test("large text reflows and home links and the final action remain reachable", async ({ page }) => {
+test("large text reflows and redesigned section links and the final action remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-  for (const link of await page.locator("#st-panel-1 a").all()) {
+  for (const link of await page.locator("#st-panel-1 a, #st-panel-2 a").all()) {
     await link.focus();
     const bounds = await link.evaluate(el => {
       const rect = el.getBoundingClientRect();
