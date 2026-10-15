@@ -1,6 +1,7 @@
 :root {
   --accent: #0d9b9b;
   --accent-dark: #086f6f;
+  --accent-surface: #087c7c;
   --nav-height: 3.5rem;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --deco-size: clamp(6rem, 18vw, 12.5rem);
@@ -121,6 +122,57 @@ a:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.st-panel h1 {
+  max-inline-size: 52rem;
+  text-wrap: balance;
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  inline-size: 100%;
+  max-inline-size: 68rem;
+  text-align: start;
+}
+
+.intro-card {
+  min-inline-size: 0;
+  padding: 1.25rem;
+  border: 1px solid #c2e2e2;
+  border-radius: 0.75rem;
+  background: #f4fbfb;
+}
+
+.intro-card h2 {
+  max-inline-size: none;
+  margin-block-end: 0.75rem;
+  color: var(--accent-dark);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.intro-card p,
+.intro-card li {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.intro-card ul {
+  margin: 0 0 0.75rem;
+  padding-inline-start: 1.25rem;
+}
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  margin-block-start: 0.5rem;
+  color: var(--accent-dark);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -177,7 +229,7 @@ a:focus-visible {
 
 .st-color {
   color: #fff;
-  background: var(--accent);
+  background: var(--accent-surface);
 }
 
 .st-color h2 {
@@ -206,7 +258,7 @@ a:focus-visible {
   padding-block-end: var(--safe-bottom);
   padding-inline-start: env(safe-area-inset-right, 0px);
   padding-inline-end: env(safe-area-inset-left, 0px);
-  background: var(--accent);
+  background: var(--accent-surface);
   box-shadow: 0 0 10px rgb(0 0 0 / 25%);
 }
 
@@ -243,6 +295,13 @@ a:focus-visible {
 
   .action-link {
     flex-basis: 100%;
+  }
+}
+
+@media (max-width: 56rem) {
+  .intro-grid {
+    grid-template-columns: 1fr;
+    max-inline-size: 42rem;
   }
 }
 
