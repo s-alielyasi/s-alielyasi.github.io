@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-10-15T18:53:27.251Z",
+  "method": "Public HTTP GET only; no form submission, login or payment.",
+  "results": [
+    {
+      "url": "https://ali-elyasi.ir/",
+      "finalUrl": "https://ali-elyasi.ir/",
+      "status": 200,
+      "result": "reachable"
+    },
+    {
+      "url": "https://virgool.io/@alielyasi/",
+      "finalUrl": "https://virgool.io/@alielyasi",
+      "status": 200,
+      "result": "reachable"
+    },
+    {
+      "url": "https://t.me/s_alielyasi",
+      "result": "inconclusive",
+      "error": "ECONNREFUSED"
+    },
+    {
+      "url": "https://www.linkedin.com/in/seyedalielyasi/",
+      "finalUrl": "https://www.linkedin.com/in/seyedalielyasi/",
+      "status": 999,
+      "result": "restricted"
+    },
+    {
+      "url": "https://github.com/s-alielyasi",
+      "finalUrl": "https://github.com/s-alielyasi",
+      "status": 200,
+      "result": "reachable"
+    },
+    {
+      "url": "https://www.goodreads.com/s_alielyasi",
+      "finalUrl": "https://www.goodreads.com/s_alielyasi",
+      "status": 403,
+      "result": "restricted"
+    },
+    {
+      "url": "https://zarinp.al/@alielyasi1",
+      "finalUrl": "https://zarinp.al/@alielyasi1",
+      "status": 200,
+      "result": "reachable"
+    },
+    {
+      "url": "https://docs.google.com/forms/d/e/1FAIpQLSeuGtriWNfBJgca-vpARM9chJB3V3ERJe99U915ctJtJj7P5g/viewform?usp=sf_link",
+      "finalUrl": "https://docs.google.com/forms/d/e/1FAIpQLSeuGtriWNfBJgca-vpARM9chJB3V3ERJe99U915ctJtJj7P5g/viewform?usp=sf_link",
+      "status": 401,
+      "result": "restricted"
+    }
+  ]
+}

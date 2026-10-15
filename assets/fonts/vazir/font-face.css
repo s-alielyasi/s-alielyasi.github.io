@@ -1,0 +1,55 @@
+/* Official vazir-font 30.1.0 Farsi-Digits webfonts; see OFL.txt and README.md. */
+
+@font-face {
+  font-family: "Vazir FD";
+  src: url("Vazir-Thin-FD.woff2") format("woff2"),
+       url("Vazir-Thin-FD.woff") format("woff");
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir FD";
+  src: url("Vazir-Light-FD.woff2") format("woff2"),
+       url("Vazir-Light-FD.woff") format("woff");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir FD";
+  src: url("Vazir-Regular-FD.woff2") format("woff2"),
+       url("Vazir-Regular-FD.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir FD";
+  src: url("Vazir-Medium-FD.woff2") format("woff2"),
+       url("Vazir-Medium-FD.woff") format("woff");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir FD";
+  src: url("Vazir-Bold-FD.woff2") format("woff2"),
+       url("Vazir-Bold-FD.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazir FD";
+  src: url("Vazir-Black-FD.woff2") format("woff2"),
+       url("Vazir-Black-FD.woff") format("woff");
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}

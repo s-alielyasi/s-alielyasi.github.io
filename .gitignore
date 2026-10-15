@@ -1,1 +1,41 @@
+# OS metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
 
+# Local editor settings and temporary files
+.idea/
+.vscode/
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+*.temp
+
+# Local environment and credentials (examples must contain placeholders only)
+.env
+.env.*
+!.env.example
+!.env.*.example
+/.aws/
+/secrets/
+/credentials.json
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+
+# Local tooling; the site itself currently needs no package installation
+node_modules/
+.npm/
+.cache/
+__pycache__/
+.venv/
+*.log
+coverage/
+playwright-report/
+test-results/
+/dist/
