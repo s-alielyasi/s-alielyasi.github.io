@@ -1,64 +1,103 @@
 # Ali Elyasi | Product Manager, Software & Quality
 
-[ali-elyasi.ir](https://ali-elyasi.ir) is Ali Elyasi's personal website, focused on product management, software, and quality. The Persian interface includes an English resume, contact links, and links to service requests and payment.
+[ali-elyasi.ir](https://ali-elyasi.ir) is Ali Elyasi's personal website, focused on product management, software, and quality. The Persian interface includes professional highlights from the English resume, a writing-profile link, contact links, and links to service requests and payment.
 
 ## Local development
 
-This is a static HTML, CSS, and JavaScript site. No package installation or build step is required.
-
-From the repository root, run:
+This is a static HTML, CSS, and JavaScript site. Viewing the source requires no package installation or application build. From the repository root, run:
 
 ```bash
 python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
-Open `http://127.0.0.1:8000` in your browser.
+Open `http://127.0.0.1:8000`. The layout supports RTL text, mobile and tablet sizes, landscape orientation, native section links, keyboard focus, and enlarged text.
 
-The layout supports mobile, tablet, and desktop screens with RTL text, native section links, and a bottom navigation bar. Sections grow with their content, including in landscape orientation and with enlarged text.
+## Repeatable checks
+
+Development tools require Node.js 22.12 or later on a [Playwright-supported OS](https://playwright.dev/docs/intro#system-requirements). They are not runtime dependencies of the website.
+
+```bash
+npm ci
+npx playwright install --with-deps chromium firefox webkit
+npm run check
+npm run test:release
+npm test
+```
+
+Playwright tests cover Chromium, Firefox, WebKit, Android/iPhone emulation, and iPad emulation. They check layout, keyboard navigation, focus visibility, large text, JavaScript-disabled links, metadata, assets, and automated WCAG rules with axe. Emulation and automated accessibility checks do not replace real-device or manual screen-reader testing.
+
+`test:release` uses Node's test runner and OpenSSL to serve local HTTPS fixtures. It verifies that live-release checks accept matching files and reject stale HTML, metadata, assets, and plain HTTP.
+
+If the bundled Chrome download is unavailable in your location, an already installed Google Chrome can run the Chromium projects:
+
+```bash
+npx playwright install --with-deps firefox webkit
+PW_CHROME_CHANNEL=chrome npm test
+```
+
+```bash
+npm run test:report
+npm run test:links -- docs/link-checks.json
+```
+
+External-link checks make public GET requests only. Network failures and access restrictions are recorded separately from confirmed missing pages. External availability does not block pull-request checks.
+
+## Release artifact and Pages
+
+```bash
+npm run build
+node scripts/serve.mjs
+```
+
+Preview the release artifact at `http://127.0.0.1:4173`. Packaging copies the public site files and licenses into ignored `dist/`; it does not compile or bundle the application. Development documents, tests, dependencies, and Git metadata are excluded.
+
+[The GitHub Actions workflow](.github/workflows/site.yml) runs checks on pull requests to `master` and pushes to `master` or `feat/**`. Deployment runs only from `master`, after checks pass. It uploads `dist/` to GitHub Pages and verifies the live title, metadata, assets, font, and resume over HTTPS.
+
+Pages must use **GitHub Actions** as its publishing source. See [docs/deployment.md](docs/deployment.md) for setup, PR, deployment, and verification steps. A local commit or prepared workflow does not confirm that a remote PR or deployment has completed.
 
 ## Font
 
-The site uses the official `vazir-font` package, pinned to version `30.1.0`, with locally hosted **Farsi-Digits** WOFF2/WOFF webfonts (`Vazir FD`). The original font license and attribution are included in [assets/fonts/vazir/](assets/fonts/vazir/README.md). No package installation is needed to serve them.
+The site uses the official `vazir-font` package, pinned to `30.1.0`, with locally hosted **Farsi-Digits** WOFF2/WOFF webfonts (`Vazir FD`). Original license, attribution, source, and integrity are in [assets/fonts/vazir/](assets/fonts/vazir/README.md). Serving the fonts needs no npm or CDN.
 
 ## Project structure
 
 ```text
-index.html                            # Main page
-assets/css/style.css                  # Styles
-assets/js/script.js                   # Panel navigation
-assets/fonts/vazir/                   # Official Vazir webfonts and license
-assets/images/favicon.png            # Site icon
+index.html                            # Page, content, SEO metadata
+assets/css/style.css                  # Responsive styles
+assets/js/script.js                   # Active section navigation
+assets/fonts/vazir/                   # Official Farsi-Digits webfonts and OFL
+assets/images/favicon.png            # Site icon and Open Graph image
 resumes/AliElyasi_Resume_English.pdf   # Public English resume
 CNAME                                 # Custom domain
 robots.txt                            # Crawler access and sitemap location
 sitemap.xml                           # Canonical public page URL
+LICENSE                               # MIT for code and development docs
+package.json                          # Development and release commands
+package-lock.json                     # Exact development dependency versions
+playwright.config.js                  # Browser and device-emulation projects
+scripts/                              # Validation, packaging, preview and live checks
+tests/                                # Browser, accessibility and release-verification tests
+.github/workflows/site.yml            # PR checks and gated Pages deployment
 AGENTS.md                             # Contributor and agent guidance
-docs/memory.md                        # Architecture and known issues
-docs/status.md                        # Completed work and remaining checks
+docs/memory.md                        # Current architecture
+docs/status.md                        # Completed work and remaining blockers
+docs/deployment.md                    # Hosting and verification guide
+docs/link-checks.json                 # Dated external-link check results
+docs/pull-request.md                  # Prepared PR title and description
 ```
 
-Only the English resume is included in the current site. See [AGENTS.md](AGENTS.md) for contributor guidance, [docs/memory.md](docs/memory.md) for the current architecture, and [docs/status.md](docs/status.md) for completed work and remaining checks.
+Only the English resume is included. See [AGENTS.md](AGENTS.md), [docs/memory.md](docs/memory.md), and [docs/status.md](docs/status.md) before making changes.
 
-## SEO and hosting
+## SEO
 
-`index.html` contains the English browser title, Persian main heading, the owner's exact description, Open Graph metadata, and JSON-LD. The description is repeated in the description meta tag, Open Graph, and JSON-LD; keep all three copies consistent. The site has one public HTML page; section hashes are navigation targets and are not separate sitemap entries.
+`index.html` contains the English browser title, Persian main heading, the owner's exact description, Open Graph metadata, and JSON-LD. Keep the description meta tag, Open Graph description, and JSON-LD description consistent.
 
-The canonical URL is `https://ali-elyasi.ir/`, matching `CNAME`. If the domain changes, update `CNAME`, the canonical and Open Graph URLs, JSON-LD, `robots.txt`, and `sitemap.xml` together.
+The canonical URL is `https://ali-elyasi.ir/`, matching `CNAME`. Domain changes must update `CNAME`, canonical/Open Graph URLs, JSON-LD, `robots.txt`, and `sitemap.xml` together. Section hashes are navigation targets, not separate sitemap pages.
 
-The repository contains no deployment workflow or build configuration. Confirm the publishing source in GitHub Pages settings before deploying; a local commit does not confirm that the live site has been updated.
+## Contributing and license
 
-## Verification
+Contributions are welcome. The code and development documentation use the [MIT License](LICENSE). Fonts retain their [SIL Open Font License](assets/fonts/vazir/OFL.txt). The resume, personal biographical content, and AE branding are outside the code license.
 
-The implementation was previously checked in Firefox 136 at 11 viewport sizes from 320 to 1440 pixels wide, including landscape layouts, 200% root text size, Enter navigation, and JavaScript-disabled navigation. These checks used temporary scripts outside the repository; there is no committed test suite or CI. Real-device, other-browser, and live-hosting verification remain listed in [docs/status.md](docs/status.md).
+## Links
 
-## Contributing
-
-Contributions are always welcome!
-
-## License
-
-The site's code and development documentation use the [MIT License](LICENSE). Vazir font files retain their separate [SIL Open Font License](assets/fonts/vazir/OFL.txt). The resume, personal biographical content, and AE branding are outside the code license.
-
-## 🔗 Links
-
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/seyedalielyasi/)
+[LinkedIn](https://www.linkedin.com/in/seyedalielyasi/)

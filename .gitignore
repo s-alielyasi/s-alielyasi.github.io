@@ -38,3 +38,4 @@ __pycache__/
 coverage/
 playwright-report/
 test-results/
+/dist/
