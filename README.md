@@ -53,7 +53,9 @@ Preview the release artifact at `http://127.0.0.1:4173`. Packaging copies the pu
 
 [The GitHub Actions workflow](.github/workflows/site.yml) runs checks on pull requests to `master` and pushes to `master` or `feat/**`. Deployment runs only from `master`, after checks pass. It uploads `dist/` to GitHub Pages and verifies the live title, metadata, assets, font, and resume over HTTPS.
 
-Pages must use **GitHub Actions** as its publishing source. See [docs/deployment.md](docs/deployment.md) for setup, PR, deployment, and verification steps. A local commit or prepared workflow does not confirm that a remote PR or deployment has completed.
+The owner creates and merges pull requests and manages Actions runs and Pages settings through GitHub. Development changes are delivered on a separate branch; remote operations require an explicit request. The workflow, tests, and release scripts support the owner's checks and releases.
+
+Pages must use **GitHub Actions** as its publishing source. See [docs/deployment.md](docs/deployment.md) for the owner's release steps and [docs/status.md](docs/status.md) for verified PR, CI, and live-site status.
 
 ## Font
 
@@ -80,10 +82,9 @@ tests/                                # Browser, accessibility and release-verif
 .github/workflows/site.yml            # PR checks and gated Pages deployment
 AGENTS.md                             # Contributor and agent guidance
 docs/memory.md                        # Current architecture
-docs/status.md                        # Completed work and remaining blockers
+docs/status.md                        # Verified project status and remaining checks
 docs/deployment.md                    # Hosting and verification guide
 docs/link-checks.json                 # Dated external-link check results
-docs/pull-request.md                  # Prepared PR title and description
 ```
 
 Only the English resume is included. See [AGENTS.md](AGENTS.md), [docs/memory.md](docs/memory.md), and [docs/status.md](docs/status.md) before making changes.
