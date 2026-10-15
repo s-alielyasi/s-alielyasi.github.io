@@ -10,7 +10,8 @@ test.beforeEach(async ({ page }) => {
 test("titles, SEO and professional content are present without duplicate headings", async ({ page, request }) => {
   const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
   await expect(page).toHaveTitle("Ali Elyasi | Product Manager, Software & Quality");
-  await expect(page.locator("h1")).toHaveText("علی الیاسی | مدیریت محصول، نرم‌افزار و کیفیت");
+  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(page.locator("h1")).toHaveText("علی الیاسی مدیریت محصول، نرم‌افزار و کیفیت");
   for (const name of ["تجربه‌ها", "پروژه‌ها", "نوشته‌ها"]) {
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   }
@@ -23,6 +24,25 @@ test("titles, SEO and professional content are present without duplicate heading
   expect(await sitemap.text()).toContain(`<loc>${canonical}</loc>`);
   const robots = await request.get("/robots.txt");
   expect(await robots.text()).toContain(`Sitemap: ${canonical}sitemap.xml`);
+});
+
+test("home actions open the intended sections and preserve browser history", async ({ page }) => {
+  const home = page.locator("#st-panel-1");
+  for (const [name, panel] of [["مشاهده رزومه", 2], ["گفت‌وگو درباره همکاری", 3],
+    ["مرور سوابق", 2], ["جزئیات در رزومه", 2]]) {
+    await home.getByRole("link", { name, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`#st-panel-${panel}$`));
+    await expect(page.locator(`#st-push-${panel}`)).toHaveAttribute("aria-current", "location");
+    await page.goBack();
+    await expect(page.locator("#st-push-1")).toHaveAttribute("aria-current", "location");
+    await page.goForward();
+    await expect(page.locator(`#st-push-${panel}`)).toHaveAttribute("aria-current", "location");
+    await page.goBack();
+  }
+  const writing = home.getByRole("link", { name: /مشاهده ویرگول/ });
+  await expect(writing).toHaveAttribute("href", "https://virgool.io/@alielyasi/");
+  await expect(writing).toHaveAttribute("target", "_blank");
+  await expect(writing).toHaveAttribute("rel", "noopener noreferrer");
 });
 
 test("all sections remain reachable across portrait and landscape layouts", async ({ page }, testInfo) => {
@@ -88,9 +108,21 @@ test("skip link and keyboard section navigation work", async ({ page }) => {
   await expect(page.locator("#st-panel-4")).toBeFocused();
 });
 
-test("large text reflows and the final action remains reachable", async ({ page }) => {
+test("large text reflows and home links and the final action remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+  for (const link of await page.locator("#st-panel-1 a").all()) {
+    await link.focus();
+    const bounds = await link.evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+        width: document.documentElement.clientWidth, barTop: document.querySelector("nav").getBoundingClientRect().top };
+    });
+    expect(bounds.left).toBeGreaterThanOrEqual(-1);
+    expect(bounds.right).toBeLessThanOrEqual(bounds.width + 1);
+    expect(bounds.top).toBeGreaterThanOrEqual(-1);
+    expect(bounds.bottom).toBeLessThanOrEqual(bounds.barTop + 1);
+  }
   await page.locator("#st-push-4").click();
   const action = page.locator("#st-panel-4 .action-link").last();
   await action.focus();
@@ -112,7 +144,7 @@ test("WCAG automated checks and screen-reader semantics", async ({ page }) => {
   await expect(page.getByRole("navigation", { name: "بخش‌های سایت" })).toBeVisible();
   await expect(page.getByRole("main")).toBeVisible();
   const snapshot = await page.locator("main").ariaSnapshot();
-  expect(snapshot).toContain('heading "علی الیاسی | مدیریت محصول، نرم‌افزار و کیفیت" [level=1]');
+  expect(snapshot).toContain('heading "علی الیاسی مدیریت محصول، نرم‌افزار و کیفیت" [level=1]');
   expect(snapshot).toContain('heading "رزومه من" [level=2]');
   expect(snapshot).not.toContain('generic: "۱"');
 });

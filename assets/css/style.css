@@ -2,11 +2,14 @@
   --accent: #0d9b9b;
   --accent-dark: #086f6f;
   --accent-surface: #087c7c;
+  --card-surface: #f4fbfb;
+  --card-border: #c2e2e2;
+  --text: #333;
   --nav-height: 3.5rem;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --deco-size: clamp(6rem, 18vw, 12.5rem);
   font-family: "Vazir FD", sans-serif;
-  color: #333;
+  color: var(--text);
   background: #fff;
   font-synthesis: none;
 }
@@ -55,6 +58,17 @@ a:focus-visible {
 
 .skip-link:focus {
   transform: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .st-container,
@@ -127,6 +141,40 @@ a:focus-visible {
   text-wrap: balance;
 }
 
+.st-home {
+  justify-content: flex-start;
+  gap: 1.5rem;
+}
+
+.home-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  inline-size: 100%;
+  max-inline-size: 68rem;
+}
+
+.home-intro h1 {
+  max-inline-size: 100%;
+}
+
+.home-intro h1 span {
+  display: block;
+}
+
+.home-specialty {
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+}
+
+.home-intro p {
+  max-inline-size: 52rem;
+}
+
+.st-home a {
+  scroll-margin-block-end: calc(var(--nav-height) + var(--safe-bottom));
+}
+
 .intro-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -137,16 +185,41 @@ a:focus-visible {
 }
 
 .intro-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   min-inline-size: 0;
-  padding: 1.25rem;
-  border: 1px solid #c2e2e2;
+  padding: 1.5rem;
+  border: 1px solid var(--card-border);
   border-radius: 0.75rem;
-  background: #f4fbfb;
+  background: var(--card-surface);
+}
+
+.intro-card-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  color: var(--accent-dark);
+}
+
+.card-icon {
+  flex: none;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  padding: 0.5rem;
+  border: 2px solid currentColor;
+  border-radius: 0.625rem;
+}
+
+.link-icon {
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
 }
 
 .intro-card h2 {
   max-inline-size: none;
-  margin-block-end: 0.75rem;
   color: var(--accent-dark);
   font-size: 1.25rem;
   font-weight: 700;
@@ -159,13 +232,23 @@ a:focus-visible {
 }
 
 .intro-card ul {
-  margin: 0 0 0.75rem;
+  margin: 0;
   padding-inline-start: 1.25rem;
+}
+
+.intro-card li::marker {
+  color: var(--accent-dark);
+}
+
+.intro-card .text-link {
+  align-self: flex-end;
+  margin-block-start: auto;
 }
 
 .text-link {
   display: inline-flex;
   align-items: center;
+  gap: 0.75rem;
   min-block-size: 2.75rem;
   margin-block-start: 0.5rem;
   color: var(--accent-dark);
@@ -202,6 +285,36 @@ a:focus-visible {
 
 .action-link:hover {
   background: #edf8f8;
+}
+
+.home-actions {
+  max-inline-size: 42rem;
+  margin-block-start: 0.5rem;
+}
+
+.home-actions .action-link {
+  flex: 0 1 auto;
+  gap: 0.75rem;
+  min-inline-size: min(100%, 12rem);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.action-link-primary {
+  color: #fff;
+  background: var(--accent-surface);
+  border-color: var(--accent-surface);
+}
+
+.action-link-primary:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.action-link-outline {
+  color: var(--accent-dark);
+  background: transparent;
+  border-width: 2px;
 }
 
 .contact-links {
@@ -299,6 +412,10 @@ a:focus-visible {
   }
 
   .action-link {
+    flex-basis: 100%;
+  }
+
+  .home-actions .action-link {
     flex-basis: 100%;
   }
 }

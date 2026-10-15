@@ -31,6 +31,19 @@ function scheduleUpdate() {
   }
 }
 
+// Some browsers leave a partly visible focused link behind the fixed menu.
+document.querySelector(".st-home").addEventListener("focusin", event => {
+  const link = event.target.closest("a");
+  if (!link || !link.matches(":focus-visible")) return;
+
+  const bounds = link.getBoundingClientRect();
+  const menuTop = document.getElementById("st-push-box").getBoundingClientRect().top;
+  if (bounds.top < 8 || bounds.bottom > menuTop - 8) {
+    const visibleTop = Math.max(8, (menuTop - bounds.height) / 2);
+    window.scrollBy({ top: bounds.top - visibleTop, behavior: "instant" });
+  }
+});
+
 window.addEventListener("scroll", scheduleUpdate, { passive: true });
 window.addEventListener("resize", scheduleUpdate);
 window.addEventListener("hashchange", scheduleUpdate);
