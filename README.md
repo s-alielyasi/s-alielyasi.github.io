@@ -55,6 +55,10 @@ The implementation was previously checked in Firefox 136 at 11 viewport sizes fr
 
 Contributions are always welcome!
 
+## License
+
+The site's code and development documentation use the [MIT License](LICENSE). Vazir font files retain their separate [SIL Open Font License](assets/fonts/vazir/OFL.txt). The resume, personal biographical content, and AE branding are outside the code license.
+
 ## 🔗 Links
 
 [![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/seyedalielyasi/)
