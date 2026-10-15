@@ -4,7 +4,7 @@
   --nav-height: 3.5rem;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --deco-size: clamp(6rem, 18vw, 12.5rem);
-  font-family: "Vazir", sans-serif;
+  font-family: "Vazir FD", sans-serif;
   color: #333;
   background: #fff;
   font-synthesis: none;

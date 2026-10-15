@@ -23,7 +23,7 @@ The layout supports mobile, tablet, and desktop screens with RTL text, native se
 
 ## Font
 
-The site uses the official `vazir-font` package, pinned to version `30.1.0`, with locally hosted WOFF2/WOFF webfonts. The original font license and attribution are included in [assets/fonts/vazir/](assets/fonts/vazir/README.md). No package installation is needed to serve them.
+The site uses the official `vazir-font` package, pinned to version `30.1.0`, with locally hosted **Farsi-Digits** WOFF2/WOFF webfonts (`Vazir FD`). The original font license and attribution are included in [assets/fonts/vazir/](assets/fonts/vazir/README.md). No package installation is needed to serve them.
 
 ## Project structure
 
