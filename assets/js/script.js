@@ -44,7 +44,7 @@ function keepFocusedLinkVisible(event) {
   }
 }
 
-for (const panel of document.querySelectorAll(".st-home, .st-resume, .st-contact")) {
+for (const panel of panels) {
   panel.addEventListener("focusin", keepFocusedLinkVisible);
 }
 

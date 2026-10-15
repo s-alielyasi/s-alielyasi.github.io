@@ -95,6 +95,38 @@ test("contact channels open their exact destinations in a new tab with keyboard 
   }
 });
 
+test("order keeps payment available, centers the form action and links to contact", async ({ page, context }) => {
+  await page.locator("#st-push-4").click();
+  const order = page.locator("#st-panel-4");
+  await expect(page.locator("#st-push-4")).toHaveAttribute("aria-current", "location");
+  // Check payment first: it must work without visiting the request form.
+  for (const [name, destination] of [
+    ["ورود به درگاه پرداخت", "https://zarinp.al/@alielyasi1"],
+    ["تکمیل فرم سفارش", "https://docs.google.com/forms/d/e/1FAIpQLSeuGtriWNfBJgca-vpARM9chJB3V3ERJe99U915ctJtJj7P5g/viewform?usp=sf_link"]
+  ]) {
+    await context.route(destination, route => route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Order destination check</title>" }));
+    const link = order.getByRole("link", { name: new RegExp(name) });
+    await expect(link).toHaveAttribute("href", destination);
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    const [popup] = await Promise.all([page.waitForEvent("popup"), link.press("Enter")]);
+    await expect(popup).toHaveURL(destination);
+    await popup.close();
+  }
+  const centered = await order.locator(".order-request").evaluate(card => {
+    const bounds = card.getBoundingClientRect();
+    const action = card.querySelector(".action-link").getBoundingClientRect();
+    const note = card.querySelector(".order-note").getBoundingClientRect();
+    return { buttonOffset: Math.abs((action.left + action.right - bounds.left - bounds.right) / 2),
+      noteOffset: Math.abs((note.left + note.right - bounds.left - bounds.right) / 2) };
+  });
+  expect(centered.buttonOffset).toBeLessThan(1);
+  expect(centered.noteOffset).toBeLessThan(1);
+  await order.getByRole("link", { name: "تماس با من", exact: true }).click();
+  await expect(page).toHaveURL(/#st-panel-3$/);
+  await expect(page.locator("#st-push-3")).toHaveAttribute("aria-current", "location");
+});
+
 test("all sections remain reachable across portrait and landscape layouts", async ({ page }, testInfo) => {
   const initial = page.viewportSize();
   const sizes = testInfo.project.name.includes("mobile") || testInfo.project.name.includes("tablet")
@@ -113,7 +145,7 @@ test("all sections remain reachable across portrait and landscape layouts", asyn
       await expect.poll(() => page.locator(`#st-panel-${i}`).evaluate(el => Math.abs(el.getBoundingClientRect().top))).toBeLessThan(2);
       const state = await page.evaluate(() => {
         const width = document.documentElement.clientWidth;
-        const overflow = [...document.querySelectorAll("h1,h2,h3,h4,p,.intro-card,.resume-card,.contact-card,.experience-badge,.skill-tags li,.action-link,.text-link,.contact-links a,.st-push")]
+        const overflow = [...document.querySelectorAll("h1,h2,h3,h4,p,.intro-card,.resume-card,.contact-card,.order-card,.order-badge,.request-checklist li,.experience-badge,.skill-tags li,.action-link,.text-link,.contact-links a,.st-push")]
           .filter(el => { const r = el.getBoundingClientRect(); return r.left < -1 || r.right > width + 1; })
           .map(el => el.textContent.trim());
         const clipped = [...document.querySelectorAll(".st-panel")].filter(el => el.scrollHeight > el.clientHeight + 2).map(el => el.id);
@@ -158,10 +190,10 @@ test("skip link and keyboard section navigation work", async ({ page }) => {
   await expect(page.locator("#st-panel-4")).toBeFocused();
 });
 
-test("large text reflows and redesigned section links and the final action remain reachable", async ({ page }) => {
+test("large text reflows and all section links remain reachable", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-  for (const link of await page.locator("#st-panel-1 a, #st-panel-2 a, #st-panel-3 a").all()) {
+  for (const link of await page.locator(".st-panel a").all()) {
     await link.focus();
     const bounds = await link.evaluate(el => {
       const rect = el.getBoundingClientRect();
@@ -173,19 +205,7 @@ test("large text reflows and redesigned section links and the final action remai
     expect(bounds.top).toBeGreaterThanOrEqual(-1);
     expect(bounds.bottom).toBeLessThanOrEqual(bounds.barTop + 1);
   }
-  await page.locator("#st-push-4").click();
-  const action = page.locator("#st-panel-4 .action-link").last();
-  await action.focus();
-  const layout = await action.evaluate(el => ({
-    right: el.getBoundingClientRect().right,
-    bottom: el.getBoundingClientRect().bottom,
-    width: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-    barTop: document.querySelector("nav").getBoundingClientRect().top
-  }));
-  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width);
-  expect(layout.right).toBeLessThanOrEqual(layout.width);
-  expect(layout.bottom).toBeLessThanOrEqual(layout.barTop + 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
 });
 
 test("WCAG automated checks and screen-reader semantics", async ({ page }) => {
@@ -206,7 +226,12 @@ test("section links work with JavaScript disabled", async ({ browser }) => {
     await page.goto("/");
     await page.locator("#st-push-4").click();
     await expect(page).toHaveURL(/#st-panel-4$/);
-    await expect(page.locator("#st-panel-4 .action-link").first()).toBeInViewport();
+    const contact = page.locator("#st-panel-4").getByRole("link", { name: "تماس با من", exact: true });
+    await contact.focus();
+    await expect(contact).toBeInViewport();
+    await contact.press("Enter");
+    await expect(page).toHaveURL(/#st-panel-3$/);
+    await expect(page.locator("#contact-title")).toBeInViewport();
     await expect(page.locator("nav [aria-current]")).toHaveCount(0);
   } finally {
     await context.close();
