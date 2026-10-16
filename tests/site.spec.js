@@ -2,6 +2,33 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 
+async function expectReflow(page) {
+  const state = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const overflow = [];
+    const walker = document.createTreeWalker(document.querySelector("main"), NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (!node.textContent.trim() || node.parentElement.closest('.visually-hidden,[aria-hidden="true"]')) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      if ([...range.getClientRects()].some(r => r.left < -1 || r.right > width + 1)) {
+        overflow.push(node.textContent.trim());
+      }
+    }
+    const clipped = [...document.querySelectorAll(".st-panel,.intro-card,.resume-card,.contact-card,.order-card,.contact-social,.resume-timeline li,.skill-tags li,.action-link,.request-checklist li")]
+      // The rotated decorative marker intentionally extends outside the panel's clip.
+      .filter(el => (!el.matches(".st-panel") && el.scrollWidth > el.clientWidth + 2) ||
+        (getComputedStyle(el).overflowY !== "visible" && el.scrollHeight > el.clientHeight + 2))
+      .map(el => ({ element: el.className, width: el.clientWidth, scrollWidth: el.scrollWidth,
+        height: el.clientHeight, scrollHeight: el.scrollHeight }));
+    return { overflow, clipped, width, scrollWidth: document.documentElement.scrollWidth };
+  });
+  expect(state.overflow).toEqual([]);
+  expect(state.clipped).toEqual([]);
+  expect(state.scrollWidth).toBeLessThanOrEqual(state.width);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
@@ -128,20 +155,27 @@ test("order keeps payment available, centers the form action and links to contac
 });
 
 test("all sections remain reachable across portrait and landscape layouts", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   const initial = page.viewportSize();
   const sizes = testInfo.project.name.includes("mobile") || testInfo.project.name.includes("tablet")
     ? [initial, { width: initial.height, height: initial.width }]
-    : [{ width: 320, height: 640 }, { width: 390, height: 844 }, { width: 768, height: 1024 },
-       { width: 1024, height: 768 }, { width: 1440, height: 900 }, { width: 640, height: 360 }];
+    : [{ width: 320, height: 640 }, { width: 360, height: 640 }, { width: 390, height: 844 },
+       { width: 430, height: 932 }, { width: 768, height: 1024 }, { width: 820, height: 1180 },
+       { width: 1024, height: 768 }, { width: 1440, height: 900 }, { width: 1536, height: 1024 },
+       { width: 640, height: 360 }, { width: 844, height: 390 }];
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
+  page.on("requestfailed", request => errors.push(request.url()));
+  page.on("response", response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
   for (const size of sizes) {
     await page.setViewportSize(size);
+    await expectReflow(page);
     for (let i = 1; i <= 4; i++) {
       const navigation = page.locator(`#st-push-${i}`);
       if (testInfo.project.use.hasTouch) await navigation.tap();
       else await navigation.click();
       await expect(page.locator(`#st-push-${i}`)).toHaveAttribute("aria-current", "location");
+      await expect(page.locator("nav [aria-current]")).toHaveCount(1);
       await expect.poll(() => page.locator(`#st-panel-${i}`).evaluate(el => Math.abs(el.getBoundingClientRect().top))).toBeLessThan(2);
       const state = await page.evaluate(() => {
         const width = document.documentElement.clientWidth;
@@ -154,12 +188,24 @@ test("all sections remain reachable across portrait and landscape layouts", asyn
       expect(state.overflow, JSON.stringify({ size, state })).toEqual([]);
       expect(state.clipped, JSON.stringify({ size, state })).toEqual([]);
       expect(state.scrollWidth).toBeLessThanOrEqual(state.width);
+      const panel = page.locator(`#st-panel-${i}`);
+      const spacing = await panel.evaluate(el => ({
+        decoration: el.querySelector(".st-deco").getBoundingClientRect().bottom,
+        content: el.querySelector("header").getBoundingClientRect().top
+      }));
+      expect(spacing.content).toBeGreaterThanOrEqual(spacing.decoration - 2);
+      await testInfo.attach(`panel-${i}-${size.width}x${size.height}`, {
+        body: await page.screenshot(), contentType: "image/png"
+      });
+      const lastLink = panel.locator("a").last();
+      // Enter keyboard modality after mouse/touch navigation, as a keyboard user would.
+      await page.keyboard.press("Tab");
+      await lastLink.focus();
+      await expect.poll(() => lastLink.evaluate(el => el.getBoundingClientRect().bottom -
+        document.querySelector("nav").getBoundingClientRect().top)).toBeLessThanOrEqual(1);
     }
   }
   expect(errors).toEqual([]);
-  await page.goto("/");
-  await page.evaluate(() => document.fonts.ready);
-  await testInfo.attach("homepage", { body: await page.screenshot(), contentType: "image/png" });
 });
 
 test("every link is reachable with Tab, has visible focus and stays above the bottom bar", async ({ page }) => {
@@ -191,21 +237,58 @@ test("skip link and keyboard section navigation work", async ({ page }) => {
 });
 
 test("large text reflows and all section links remain reachable", async ({ page }) => {
-  await page.setViewportSize({ width: 320, height: 640 });
-  await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-  for (const link of await page.locator(".st-panel a").all()) {
-    await link.focus();
-    const bounds = await link.evaluate(el => {
-      const rect = el.getBoundingClientRect();
-      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
-        width: document.documentElement.clientWidth, barTop: document.querySelector("nav").getBoundingClientRect().top };
+  test.setTimeout(90_000);
+  for (const size of [{ width: 320, height: 640 }, { width: 640, height: 360 }]) {
+    await page.setViewportSize(size);
+    // Representative home-indicator inset; this does not emulate physical hardware.
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+      document.documentElement.style.setProperty("--safe-bottom", "34px");
     });
-    expect(bounds.left).toBeGreaterThanOrEqual(-1);
-    expect(bounds.right).toBeLessThanOrEqual(bounds.width + 1);
-    expect(bounds.top).toBeGreaterThanOrEqual(-1);
-    expect(bounds.bottom).toBeLessThanOrEqual(bounds.barTop + 1);
+    await expectReflow(page);
+    for (const link of await page.locator(".st-panel a").all()) {
+      await link.focus();
+      const bounds = await link.evaluate(el => {
+        const rect = el.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+          width: document.documentElement.clientWidth, barTop: document.querySelector("nav").getBoundingClientRect().top };
+      });
+      expect(bounds.left).toBeGreaterThanOrEqual(-1);
+      expect(bounds.right).toBeLessThanOrEqual(bounds.width + 1);
+      expect(bounds.top).toBeGreaterThanOrEqual(-1);
+      // An action taller than the available landscape viewport must still be scrollable.
+      if (bounds.bottom - bounds.top <= bounds.barTop - 16) {
+        expect(bounds.bottom).toBeLessThanOrEqual(bounds.barTop + 1);
+      }
+    }
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const footer = page.locator(".order-support");
+    expect(await footer.evaluate(el => el.getBoundingClientRect().bottom -
+      document.querySelector("nav").getBoundingClientRect().top)).toBeLessThanOrEqual(-8);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
   }
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
+});
+
+test("direct hashes, scrolling and resize keep one active section", async ({ page }) => {
+  for (let i = 4; i >= 1; i--) {
+    await page.goto(`/?direct=${i}#st-panel-${i}`);
+    await expect(page.locator(`#st-push-${i}`)).toHaveAttribute("aria-current", "location");
+    await expect(page.locator("nav [aria-current]")).toHaveCount(1);
+  }
+  for (const size of [{ width: 390, height: 844 }, { width: 1024, height: 768 }]) {
+    await page.setViewportSize(size);
+    for (let i = 1; i <= 4; i++) {
+      await page.locator(`#st-panel-${i}`).evaluate(el => {
+        window.scrollTo({ top: el.offsetTop + el.offsetHeight * 0.3, behavior: "instant" });
+      });
+      await expect(page.locator(`#st-push-${i}`)).toHaveAttribute("aria-current", "location");
+      await expect(page.locator("nav [aria-current]")).toHaveCount(1);
+    }
+  }
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("smooth");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
 });
 
 test("WCAG automated checks and screen-reader semantics", async ({ page }) => {
@@ -233,6 +316,18 @@ test("section links work with JavaScript disabled", async ({ browser }) => {
     await expect(page).toHaveURL(/#st-panel-3$/);
     await expect(page.locator("#contact-title")).toBeInViewport();
     await expect(page.locator("nav [aria-current]")).toHaveCount(0);
+    await page.setViewportSize({ width: 320, height: 640 });
+    // CSS remains readable when scripting is unavailable, including enlarged menu labels.
+    await context.route("**/assets/css/style.css", async route => {
+      const response = await route.fetch();
+      await route.fulfill({ response, body: `${await response.text()}\n:root { font-size: 200%; --safe-bottom: 34px; }` });
+    });
+    await page.reload();
+    await page.locator("#st-push-4").click();
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
+    await expect.poll(() => page.locator(".order-support").evaluate(el => el.getBoundingClientRect().bottom -
+      document.querySelector("nav").getBoundingClientRect().top)).toBeLessThanOrEqual(-8);
+    await expectReflow(page);
   } finally {
     await context.close();
   }

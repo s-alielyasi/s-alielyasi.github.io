@@ -448,7 +448,7 @@ a:focus-visible {
 
 .contact-links {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: 1rem;
   margin: 0;
   padding: 0;
@@ -595,7 +595,7 @@ a:focus-visible {
 
 .resume-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: 1rem;
   margin: 0;
   padding: 0;
@@ -824,7 +824,7 @@ a:focus-visible {
 }
 
 .order-services {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1056,16 +1056,6 @@ a:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .contact-social {
-    grid-template-columns: 56px minmax(0, 1fr);
-    grid-template-areas: "icon title" "description description" "handle handle" ". arrow";
-    gap: 0.25rem 0.75rem;
-  }
-
-  .contact-arrow {
-    justify-self: end;
-  }
-
   .order-services {
     grid-template-columns: 1fr;
   }
@@ -1083,6 +1073,16 @@ a:focus-visible {
 
   .contact-primary {
     grid-template-columns: 1fr;
+  }
+
+  .contact-social {
+    grid-template-columns: 56px minmax(0, 1fr);
+    grid-template-areas: "icon title" "description description" "handle handle" ". arrow";
+    gap: 0.25rem 0.75rem;
+  }
+
+  .contact-arrow {
+    justify-self: end;
   }
 
   .order-details {
