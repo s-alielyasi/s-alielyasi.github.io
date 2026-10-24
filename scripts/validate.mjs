@@ -7,7 +7,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const html = await readFile(path.join(root, "index.html"), "utf8");
 const domain = (await readFile(path.join(root, "CNAME"), "utf8")).trim();
 const canonical = `https://${domain}/`;
-const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
 assert.equal(new Set(ids).size, ids.length, "HTML IDs must be unique");
 assert.equal([...html.matchAll(/<h1\b/g)].length, 1, "Use one main heading");
 
